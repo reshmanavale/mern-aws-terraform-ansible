@@ -1,0 +1,27 @@
+- name: Setup Web Server
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Install Node.js and npm
+      apt:
+        name: ['nodejs', 'npm']
+        state: present
+        update_cache: yes
+
+    - name: Clone application repo
+      git:
+        repo: "{{ app_repo }}"
+        dest: /home/ubuntu/app
+        version: main
+
+    - name: Install backend dependencies
+      npm:
+        path: /home/ubuntu/app/backend
+        state: present
+
+    - name: Set backend env file
+      copy:
+        dest: /home/ubuntu/app/backend/.env
+        content: |
+          DB_URL=mongodb://{{ hostvars['db'].ansible_host }}:27017/travelmemory

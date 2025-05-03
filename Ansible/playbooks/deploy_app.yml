@@ -1,0 +1,22 @@
+- name: Deploy MERN App
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Start backend
+      shell: |
+        nohup node /home/ubuntu/app/backend/server.js > backend.log 2>&1 &
+
+    - name: Set frontend .env
+      copy:
+        dest: /home/ubuntu/app/frontend/.env
+        content: |
+          REACT_APP_BACKEND_URL=http://{{ hostvars['web'].ansible_host }}:3001
+
+    - name: Install frontend deps and build
+      shell: |
+        cd /home/ubuntu/app/frontend
+        npm install
+        npm run build
+        npm install -g serve
+        nohup serve -s build -l 3000 > frontend.log 2>&1 &
